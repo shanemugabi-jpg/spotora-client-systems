@@ -50,19 +50,16 @@ export default function Zone7Page() {
   const [cart, setCart] = useState([]);
   const [table, setTable] = useState("");
   const [notes, setNotes] = useState("");
-  const [search, setSearch] = useState("");
 
-  const addItem = (item) => {
+  const addItem = (name, price) => {
     setCart((prev) => {
-      const existing = prev.find((cartItem) => cartItem.name === item.name);
+      const existing = prev.find((item) => item.name === name);
       if (existing) {
-        return prev.map((cartItem) =>
-          cartItem.name === item.name
-            ? { ...cartItem, qty: cartItem.qty + 1 }
-            : cartItem
+        return prev.map((item) =>
+          item.name === name ? { ...item, qty: item.qty + 1 } : item
         );
       }
-      return [...prev, { ...item, qty: 1 }];
+      return [...prev, { name, price, qty: 1 }];
     });
   };
 
@@ -78,25 +75,6 @@ export default function Zone7Page() {
 
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
-  const filteredMenu = menu
-    .map((section) => ({
-      ...section,
-      items: (section.items || []).filter((item) => {
-        const q = search.toLowerCase();
-
-        return (
-          section.category.toLowerCase().includes(q) ||
-          item.name.toLowerCase().includes(q) ||
-          (item.description || "").toLowerCase().includes(q)
-        );
-      }),
-    }))
-    .filter(
-      (section) =>
-        section.category.toLowerCase().includes(search.toLowerCase()) ||
-        section.items.length > 0
-    );
-
   const sendOrder = () => {
     if (!table.trim()) {
       alert("Please enter the table number first.");
@@ -111,9 +89,7 @@ export default function Zone7Page() {
     const orderText = cart
       .map(
         (item) =>
-          `${item.qty}× ${item.name} — UGX ${(
-            item.price * item.qty
-          ).toLocaleString()}`
+          `${item.qty}× ${item.name} — UGX ${(item.price * item.qty).toLocaleString()}`
       )
       .join("%0A");
 
@@ -129,65 +105,81 @@ export default function Zone7Page() {
   };
 
   return (
-    <main className="container">
-      <section className="hero">
-        <h1>ZONE 7</h1>
-        <p>FOOD · DRINKS · EVENTS</p>
-        <p className="gold-text">QR Ordering by Spotora</p>
+    <main className="min-h-screen bg-black text-white pb-32">
+      <section className="px-5 py-8 text-center border-b border-yellow-600/30">
+        <h1 className="text-5xl font-black tracking-widest text-yellow-400">
+          ZONE 7
+        </h1>
+        <p className="mt-2 text-sm tracking-[0.3em] text-gray-300">
+          FOOD · DRINKS · EVENTS
+        </p>
+        <p className="mt-5 text-yellow-300 font-semibold">
+          QR Ordering by Spotora
+        </p>
       </section>
 
-      <section className="controls">
-        <label>Enter Table Number</label>
+      <section className="px-5 py-6 bg-zinc-950 sticky top-0 z-20 border-b border-yellow-600/30">
+        <label className="block text-yellow-400 font-bold mb-2">
+          Enter Table Number
+        </label>
         <input
           value={table}
           onChange={(e) => setTable(e.target.value)}
           placeholder="Example: Table 12"
-        />
-
-        <label>Search Menu</label>
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search food, drinks, category, ingredients..."
+          className="w-full rounded-xl px-4 py-4 bg-black border border-yellow-500 text-white outline-none"
         />
       </section>
 
-      <section>
-        {filteredMenu.map((section) => (
-          <div key={section.category} className="menu-section">
-            <h2>{section.category}</h2>
+      <section className="px-5 py-6">
+        {menu.map((section) => (
+          <div key={section.category} className="mb-8">
+            <h2 className="text-2xl font-black text-yellow-400 mb-4">
+              {section.category}
+            </h2>
 
-            {(section.items || []).map((item) => (
-              <article key={`${section.category}-${item.name}-${item.price}`}>
-                <div>
-                  <h3>{item.name}</h3>
+            <div className="space-y-3">
+              {section.items.map(([name, price]) => (
+                <div
+                  key={name}
+                  className="flex items-center justify-between gap-4 bg-zinc-950 border border-zinc-800 rounded-2xl p-4"
+                >
+                  <div>
+                    <h3 className="font-bold">{name}</h3>
+                    <p className="text-yellow-300 text-sm">
+                      UGX {price.toLocaleString()}
+                    </p>
+                  </div>
 
-                  {item.description && <p>{item.description}</p>}
-
-                  <p className="price">UGX {item.price.toLocaleString()}</p>
+                  <button
+                    onClick={() => addItem(name, price)}
+                    className="bg-yellow-500 text-black font-black px-4 py-2 rounded-xl"
+                  >
+                    Add
+                  </button>
                 </div>
-
-                <button onClick={() => addItem(item)}>Add</button>
-              </article>
-            ))}
+              ))}
+            </div>
           </div>
         ))}
       </section>
 
-      <section className="cart-bar">
-        <div className="cart-items">
+      <section className="fixed bottom-0 left-0 right-0 bg-zinc-950 border-t border-yellow-600/40 p-4">
+        <div className="max-h-44 overflow-y-auto mb-3">
           {cart.length === 0 ? (
-            <p>Cart is empty</p>
+            <p className="text-gray-400 text-sm">Cart is empty</p>
           ) : (
             cart.map((item) => (
-              <div key={item.name} className="cart-row">
-                <span>
+              <div key={item.name} className="flex justify-between items-center mb-2">
+                <span className="text-sm">
                   {item.qty}× {item.name}
                 </span>
-
-                <div>
-                  <button onClick={() => changeQty(item.name, -1)}>−</button>
-                  <button onClick={() => changeQty(item.name, 1)}>+</button>
+                <div className="flex gap-2 items-center">
+                  <button onClick={() => changeQty(item.name, -1)} className="px-2 bg-zinc-800 rounded">
+                    −
+                  </button>
+                  <button onClick={() => changeQty(item.name, 1)} className="px-2 bg-zinc-800 rounded">
+                    +
+                  </button>
                 </div>
               </div>
             ))
@@ -198,9 +190,13 @@ export default function Zone7Page() {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Optional notes e.g. no onions, takeaway..."
+          className="w-full mb-3 rounded-xl px-3 py-2 bg-black border border-zinc-700 text-white text-sm"
         />
 
-        <button onClick={sendOrder} className="send-btn">
+        <button
+          onClick={sendOrder}
+          className="w-full bg-yellow-500 text-black font-black py-4 rounded-2xl"
+        >
           Send Order · UGX {total.toLocaleString()}
         </button>
       </section>
