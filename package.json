@@ -1,4 +1,6 @@
 {
+  "name": "spotora-client-systems",
+  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -8,6 +10,5 @@
     "next": "latest",
     "react": "latest",
     "react-dom": "latest"
-  },
-  "devDependencies": {}
+  }
 }
