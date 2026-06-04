@@ -1,3 +1,9 @@
+"use client";
+
+import { useState } from "react";
+
+const WHATSAPP_NUMBER = "256771753680";
+
 export default function Zone7Page() {
   const [cart, setCart] = useState([]);
   const [table, setTable] = useState("");
