@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -540,6 +541,8 @@ const menu = [
 ];
 
 export default function Zone7Page() {
+  return (
+    <main className="container">
   const [cart, setCart] = useState([]);
   const [table, setTable] = useState("");
   const [notes, setNotes] = useState("");
@@ -747,7 +750,9 @@ const [search, setSearch] = useState("");
       </section>
           
     </main>
+          </main>
+)
+}
   );
 }
-
 
