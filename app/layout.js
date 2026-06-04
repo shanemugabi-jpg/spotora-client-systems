@@ -1,16 +1,20 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Zone 7",
+  title: "Zone 7 Menu",
   description: "QR Ordering by Spotora",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
