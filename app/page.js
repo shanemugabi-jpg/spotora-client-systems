@@ -50,16 +50,21 @@ export default function Zone7Page() {
   const [cart, setCart] = useState([]);
   const [table, setTable] = useState("");
   const [notes, setNotes] = useState("");
+  const [search, setSearch] = useState("");
 
-  const addItem = (name, price) => {
+  const addItem = (item) => {
     setCart((prev) => {
-      const existing = prev.find((item) => item.name === name);
+      const existing = prev.find((cartItem) => cartItem.name === item.name);
+
       if (existing) {
-        return prev.map((item) =>
-          item.name === name ? { ...item, qty: item.qty + 1 } : item
+        return prev.map((cartItem) =>
+          cartItem.name === item.name
+            ? { ...cartItem, qty: cartItem.qty + 1 }
+            : cartItem
         );
       }
-      return [...prev, { name, price, qty: 1 }];
+
+      return [...prev, { ...item, qty: 1 }];
     });
   };
 
@@ -75,6 +80,25 @@ export default function Zone7Page() {
 
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
+  const filteredMenu = menu
+    .map((section) => ({
+      ...section,
+      items: (section.items || []).filter((item) => {
+        const q = search.toLowerCase();
+
+        return (
+          section.category.toLowerCase().includes(q) ||
+          item.name.toLowerCase().includes(q) ||
+          (item.description || "").toLowerCase().includes(q)
+        );
+      }),
+    }))
+    .filter(
+      (section) =>
+        section.category.toLowerCase().includes(search.toLowerCase()) ||
+        section.items.length > 0
+    );
+
   const sendOrder = () => {
     if (!table.trim()) {
       alert("Please enter the table number first.");
@@ -89,7 +113,9 @@ export default function Zone7Page() {
     const orderText = cart
       .map(
         (item) =>
-          `${item.qty}× ${item.name} — UGX ${(item.price * item.qty).toLocaleString()}`
+          `${item.qty}× ${item.name} — UGX ${(
+            item.price * item.qty
+          ).toLocaleString()}`
       )
       .join("%0A");
 
@@ -110,9 +136,11 @@ export default function Zone7Page() {
         <h1 className="text-5xl font-black tracking-widest text-yellow-400">
           ZONE 7
         </h1>
+
         <p className="mt-2 text-sm tracking-[0.3em] text-gray-300">
           FOOD · DRINKS · EVENTS
         </p>
+
         <p className="mt-5 text-yellow-300 font-semibold">
           QR Ordering by Spotora
         </p>
@@ -122,37 +150,58 @@ export default function Zone7Page() {
         <label className="block text-yellow-400 font-bold mb-2">
           Enter Table Number
         </label>
+
         <input
           value={table}
           onChange={(e) => setTable(e.target.value)}
           placeholder="Example: Table 12"
           className="w-full rounded-xl px-4 py-4 bg-black border border-yellow-500 text-white outline-none"
         />
+
+        <div className="mt-4">
+          <label className="block text-yellow-400 font-bold mb-2">
+            Search Menu
+          </label>
+
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search food, drinks, category, ingredients..."
+            className="w-full rounded-xl px-4 py-4 bg-black border border-zinc-700 text-white outline-none"
+          />
+        </div>
       </section>
 
       <section className="px-5 py-6">
-        {menu.map((section) => (
+        {filteredMenu.map((section) => (
           <div key={section.category} className="mb-8">
             <h2 className="text-2xl font-black text-yellow-400 mb-4">
               {section.category}
             </h2>
 
             <div className="space-y-3">
-              {section.items.map(([name, price]) => (
+              {(section.items || []).map((item) => (
                 <div
-                  key={name}
+                  key={`${section.category}-${item.name}-${item.price}`}
                   className="flex items-center justify-between gap-4 bg-zinc-950 border border-zinc-800 rounded-2xl p-4"
                 >
-                  <div>
-                    <h3 className="font-bold">{name}</h3>
-                    <p className="text-yellow-300 text-sm">
-                      UGX {price.toLocaleString()}
+                  <div className="pr-2">
+                    <h3 className="font-bold">{item.name}</h3>
+
+                    {item.description && (
+                      <p className="text-gray-400 text-sm mt-1 leading-relaxed">
+                        {item.description}
+                      </p>
+                    )}
+
+                    <p className="text-yellow-300 text-sm mt-2">
+                      UGX {item.price.toLocaleString()}
                     </p>
                   </div>
 
                   <button
-                    onClick={() => addItem(name, price)}
-                    className="bg-yellow-500 text-black font-black px-4 py-2 rounded-xl"
+                    onClick={() => addItem(item)}
+                    className="bg-yellow-500 text-black font-black px-4 py-2 rounded-xl shrink-0"
                   >
                     Add
                   </button>
@@ -169,15 +218,26 @@ export default function Zone7Page() {
             <p className="text-gray-400 text-sm">Cart is empty</p>
           ) : (
             cart.map((item) => (
-              <div key={item.name} className="flex justify-between items-center mb-2">
+              <div
+                key={item.name}
+                className="flex justify-between items-center mb-2"
+              >
                 <span className="text-sm">
                   {item.qty}× {item.name}
                 </span>
+
                 <div className="flex gap-2 items-center">
-                  <button onClick={() => changeQty(item.name, -1)} className="px-2 bg-zinc-800 rounded">
+                  <button
+                    onClick={() => changeQty(item.name, -1)}
+                    className="px-2 bg-zinc-800 rounded"
+                  >
                     −
                   </button>
-                  <button onClick={() => changeQty(item.name, 1)} className="px-2 bg-zinc-800 rounded">
+
+                  <button
+                    onClick={() => changeQty(item.name, 1)}
+                    className="px-2 bg-zinc-800 rounded"
+                  >
                     +
                   </button>
                 </div>
